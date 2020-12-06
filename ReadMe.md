@@ -6,4 +6,4 @@
 - 1
 - 2
 ### Feedback ###
-- 1 e-mile:AnonymityA@qq.com
+- 1 email:AnonymityA@qq.com
