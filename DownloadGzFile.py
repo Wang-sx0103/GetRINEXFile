@@ -63,7 +63,7 @@ def downloadFile():
                     date2Str(Day) + constant2
                 navigationFile = stationName + constant1 + str(year) + \
                     date2Str(Day) + constant3
-                if os.path.exists(observationFile):
+                if os.path.exists("./resources/" + observationFile):
                     print(observationFile + "已经存在！")
                 else:
                     print(observationFile + "文件开始下载...")
@@ -82,11 +82,11 @@ def downloadFile():
                     fileSize = ftp.size(serverPath)
                     print(
                         "文件大小：" +
-                        str(fileSize(fileSize)[0]) +
-                        fileSize(fileSize)[1])
+                        str(getFileSize(fileSize)[0]) +
+                        getFileSize(fileSize)[1])
                     print()
 
-                if os.path.exists(navigationFile):
+                if os.path.exists("./resources/" + navigationFile):
                     print(navigationFile + "已经存在！")
                 else:
                     print(navigationFile + "文件开始下载...")
@@ -105,8 +105,8 @@ def downloadFile():
                     fileSize = ftp.size(serverPath)
                     print(
                         "文件大小：" +
-                        str(fileSize(fileSize)[0]) +
-                        fileSize(fileSize)[1])
+                        str(getFileSize(fileSize)[0]) +
+                        getFileSize(fileSize)[1])
                     print()
             except Exception as ex_results:
                 if str(ex_results) == "550 Failed to open file.":
@@ -131,7 +131,8 @@ def date2Str(day):
         return str(day)
 
 
-def fileSize(fileSize):
+def getFileSize(fileSize):
+    fileSize = int(fileSize)
     if 0 < fileSize <= 1024:
         return (fileSize, "B")
     else:
