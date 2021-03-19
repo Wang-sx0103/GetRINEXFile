@@ -45,7 +45,7 @@ def ftpConnect():
     return ftp
 
 
-def downloadfile():
+def downloadFile():
     ftp = ftpConnect()
     print("文件开始下载")
     # "/IGS/obs"/"/gnss/data/daily"
@@ -57,12 +57,12 @@ def downloadfile():
             try:
                 stationName = allStationName[i][0:]
                 # 生成文件名称
-                fileName = stationName + constant1 + year + Day + constant2
+                fileName = stationName + constant1 + year + date2Str(Day) + constant2
                 if os.path.exists(fileName):
                     print(fileName+"已经存在！")
                     continue
                 print(fileName + "文件开始下载...")
-                path = datapath1 + year + "/" + Day + "/" + fileName
+                path = datapath1 + year + "/" + date2Str(Day) + "/" + fileName
                 # 设置缓冲块大小
                 bufsize = 5120
                 fp = open(fileName, 'wb')
@@ -78,15 +78,25 @@ def downloadfile():
                     fp.close()
                     # 删除空文件
                     os.remove(fileName)
+                else:
                     exceptionFile.write("抓到一个未处理异常：" + str(ex_results) + "\n")
                     print("抓到一个未处理异常：", ex_results)
     # 退出ftp服务器
     ftp.quit()
 
 
+def date2Str(day):
+    if 0<=day<=9:
+        return "00"+str(day)
+    elif 10<=day<=99:
+        return "0"+str(day)
+    else:
+        return str(day)
+
+
 if __name__ == "__main__":
     init()
-    downloadfile()
+    downloadFile()
     print("所有文件下载完成!")
     endTime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
     exceptionFile.write("结束时间：" + endTime + "\n")
