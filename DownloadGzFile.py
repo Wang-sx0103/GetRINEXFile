@@ -7,7 +7,7 @@ from ftplib import FTP
 
 
 def init():
-    with open("IGS Station Name.txt", "r", encoding="utf-8") as file:
+    with open("IGSStationName.txt", "r", encoding="utf-8") as file:
         # 逐行读取站名
         global allStationName
         allStationName = file.readlines()
@@ -57,12 +57,14 @@ def downloadFile():
             try:
                 stationName = allStationName[i][0:]
                 # 生成文件名称
-                fileName = stationName + constant1 + year + date2Str(Day) + constant2
+                fileName = stationName + constant1 + str(year) + \
+                    date2Str(Day) + constant2
                 if os.path.exists(fileName):
                     print(fileName+"已经存在！")
                     continue
                 print(fileName + "文件开始下载...")
-                path = datapath1 + year + "/" + date2Str(Day) + "/" + fileName
+                path = datapath1 + str(year) + \
+                    "/" + date2Str(Day) + "/" + fileName
                 # 设置缓冲块大小
                 bufsize = 5120
                 fp = open(fileName, 'wb')
@@ -86,9 +88,9 @@ def downloadFile():
 
 
 def date2Str(day):
-    if 0<=day<=9:
-        return "00"+str(day)
-    elif 10<=day<=99:
+    if 0 <= day <= 9:
+        return "00" + str(day)
+    elif 10 <= day <= 99:
         return "0"+str(day)
     else:
         return str(day)
