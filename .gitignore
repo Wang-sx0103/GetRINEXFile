@@ -141,3 +141,5 @@ cython_debug/
 异常记录.txt
 #配置文件#
 .vscode/
+#下载的资源文件#
+resources/
