@@ -138,6 +138,6 @@ dmypy.json
 cython_debug/
 
 #异常抓取#
-*.txt
+异常记录.txt
 #配置文件#
 .vscode/
