@@ -1,9 +1,17 @@
 # -*- coding: utf-8 -*-
+# igs.ign.fr/pub/igs/data/campaign/mgex/daily/rinex3/
 import os
 import time
 from ftplib import FTP
 
-# 加载初始化
+
+'''
+init():
+    初始化程序所需要的必要变量
+    建立异常记录文件：exceptionFile
+    逐行读取站名至列表：allStationName
+    获取日期
+'''
 
 
 def init():
@@ -28,6 +36,12 @@ def init():
     endDay = eval(input("输入结束天数："))
 
 
+'''
+ftpConnect():
+    连接并登入服务器
+'''
+
+
 def ftpConnect():
     # 'igs.bkg.bund.de'/'cddis.nasa.gov'
     ftp_server = 'igs.ign.fr'
@@ -46,14 +60,25 @@ def ftpConnect():
     return ftp
 
 
+'''
+downloadFile()函数：
+
+'''
+
+
 def downloadFile():
+    global ftp
+    global fp
+    global fileSize
+    global downloadSize
+    downloadSize = 0
     ftp = ftpConnect()
-    # print("文件开始下载")
     # "/IGS/obs"/"/gnss/data/daily"
     datapath1 = "pub/igs/data/campaign/mgex/daily/rinex3/"
     constant1 = "_R_"
     constant2 = "0000_01D_30S_MO.crx.gz"
     constant3 = "0000_01D_CN.rnx.gz"
+
     for i in range(len(allStationName)):
         for Day in range(startDay, endDay+1):
             try:
@@ -63,6 +88,8 @@ def downloadFile():
                     date2Str(Day) + constant2
                 navigationFile = stationName + constant1 + str(year) + \
                     date2Str(Day) + constant3
+
+                # Observation文件下载
                 if os.path.exists("./resources/" + observationFile):
                     print(observationFile + "已经存在！")
                 else:
@@ -74,18 +101,25 @@ def downloadFile():
                     else:
                         os.mkdir("resources")
                         fp = open("./resources/" + observationFile, 'wb')
+                    fileSize = ftp.size(serverPath)
                     # 接收服务器上文件并写入本地文件
-                    ftp.retrbinary("RETR " + serverPath, fp.write)
+                    ftp.retrbinary(
+                        cmd="RETR " + serverPath,
+                        callback=downloadBar,
+                        blocksize=81920)
+                    # 重置文件的大小
+                    downloadSize = 0
+                    print()
                     # 文件关闭，释放使用权
                     fp.close()
                     print(observationFile + "文件下载完成！")
-                    fileSize = ftp.size(serverPath)
                     print(
                         "文件大小：" +
-                        str(getFileSize(fileSize)[0]) +
-                        getFileSize(fileSize)[1])
-                    print()
+                        str(formatSize(fileSize)[0]) +
+                        formatSize(fileSize)[1])
+                    print("----"*20)
 
+                # Navigation文件下载
                 if os.path.exists("./resources/" + navigationFile):
                     print(navigationFile + "已经存在！")
                 else:
@@ -97,17 +131,24 @@ def downloadFile():
                     else:
                         os.mkdir("resources")
                         fp = open("./resources/" + navigationFile, 'wb')
+                    fileSize = ftp.size(serverPath)
                     # 接收服务器上文件并写入本地文件
-                    ftp.retrbinary("RETR " + serverPath, fp.write)
+                    ftp.retrbinary(
+                        cmd="RETR " + serverPath,
+                        callback=downloadBar,
+                        blocksize=81920)
+                    # 重置文件的大小
+                    downloadSize = 0
+                    print()
                     # 文件关闭，释放使用权
                     fp.close()
                     print(navigationFile + "文件下载完成！")
-                    fileSize = ftp.size(serverPath)
                     print(
                         "文件大小：" +
-                        str(getFileSize(fileSize)[0]) +
-                        getFileSize(fileSize)[1])
-                    print()
+                        str(formatSize(fileSize)[0]) +
+                        formatSize(fileSize)[1])
+                    print("----"*20)
+
             except Exception as ex_results:
                 if str(ex_results) == "550 Failed to open file.":
                     exceptionFile.write(observationFile + "文件不存在！" + "\n")
@@ -122,6 +163,13 @@ def downloadFile():
     ftp.quit()
 
 
+'''
+date2Str(day)函数：
+    day：这一年的第几天
+    return：字符串类型的天数（012、001、123）
+'''
+
+
 def date2Str(day):
     if 0 <= day <= 9:
         return "00" + str(day)
@@ -131,28 +179,56 @@ def date2Str(day):
         return str(day)
 
 
-def getFileSize(fileSize):
-    fileSize = int(fileSize)
+'''
+getFileSize(fileSize):
+    fileSize：服务器端文件大小
+    return：规范文件的单位
+'''
+
+
+def formatSize(fileSize):
     if 0 < fileSize <= 1024:
         return (fileSize, "B")
     else:
-        fileSize = int(round(fileSize/1024))
+        fileSize = fileSize/1024
         if 0 < fileSize <= 1024:
-            return (fileSize, "KB")
+            return (round(fileSize, 2), "KB")
         else:
-            fileSize = int(round(fileSize/1024))
+            fileSize = fileSize/1024
             if 0 < fileSize <= 1024:
-                return (fileSize, "MB")
+                return (round(fileSize, 2), "MB")
             else:
-                fileSize = int(round(fileSize/1024))
-                return (fileSize, "GB")
+                fileSize = fileSize/1024
+                return (round(fileSize, 2), "GB")
+
+
+'''
+downloadBar(block):
+    此为回调函数
+    block：获取正在下载的文件某次获得的数据大小
+    downloadSize：总已下载大小
+    fileSize：带下载文件在服务器中的大小
+'''
+
+
+def downloadBar(block):
+    global downloadSize
+    global fileSize
+    fp.write(block)
+    downloadSize = downloadSize + len(block)
+    print("\r下载进度：{:.2%}".format(downloadSize/fileSize), end="")
+
+
+'''
+懂得都懂
+'''
 
 
 if __name__ == "__main__":
     init()
     downloadFile()
     print("所有文件下载完成!")
-    # endTime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    print("\a")
     exceptionFile.write(
         "结束时间：" +
         time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) +
